@@ -164,6 +164,24 @@ def createDir(dir):
 # ----------------------------------------------------------------------
 
 """
+Funtion to compute L_sigma.
+  * X: (N x 2) matrix of agents position from the centroid
+  * sigma: (N) vector of simgma_values on each row of X
+"""
+def L_sigma(X, sigma, denom=None):
+    N = X.shape[0]
+    l_sigma_hat = sigma[:,None].T @ X
+    if denom == None:
+        x_norms = np.zeros((N))
+        for i in range(N):
+            x_norms[i] = X[i,:] @ X[i,:].T
+            D_sqr = np.max(x_norms)
+        l_sigma_hat = l_sigma_hat / (N * D_sqr)
+    else:
+        l_sigma_hat = l_sigma_hat/denom
+    return l_sigma_hat.flatten()
+
+"""
 Function to generate a uniform circular distribution.
   * N: number of points
   * n: dimension of the real space

@@ -19,7 +19,7 @@ FIGSIZE = (16,9)
 # DPI resolution dictionary
 RES_DIC = {
     "480p"   : 640,
-    "HD" : 1280,
+    "HD"     : 1280,
     "FullHD" : 1920,
     "2K"     : 2560,
     "4K"     : 3880
@@ -210,7 +210,7 @@ def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=No
 # Animation Plot Class I #
 ##########################
 
-def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD"):
+def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", field_rot_sw=False):
 
     # Get data from the Data Collector
     xdata = data_col.get("pf")[..., 0]
@@ -292,13 +292,14 @@ def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD"):
     #############
     # MAIN axis
     #############
-    if field_rot is not None:
+    if field_rot_sw:
         kw_draw_img = {key: kw_draw_field[key] for key in kw_draw_field.keys() if key != "contour_levels"}
         sim.sigma_field.rot = field_rot[0]
         field_img = sim.sigma_field.draw_imshow(fig, main_ax, **kw_draw_img)
     else:
         sim.sigma_field.draw(fig, main_ax, **kw_draw_field)
         main_ax.grid(True)
+
 
     # Agents
     lines_agents = []
@@ -387,10 +388,9 @@ def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD"):
         color = color_lmb(i)
         lw = lw_lmb(i)
         z_order = z_lmb(i)
-        main_ax.grid(True)
 
         # Update the vector field
-        if field_rot is not None:
+        if field_rot_sw:
             sim.sigma_field.rot = field_rot[i]
             Z = sim.sigma_field.draw_imshow(**kw_draw_img, make_im=False)
             field_img.set_data(Z)

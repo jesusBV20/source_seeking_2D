@@ -123,7 +123,7 @@ class sigma:
 
   """
   Function to draw the gradient at a point.
-    * x: point where the gradient is to be drawn 
+    * x: point where the gradient is to be drawn. [x,y]
     * ax: axis to plot on.
     * width: arrow size.
     * scale: scales the length of the arrow (smaller for larger scale values).
@@ -133,11 +133,32 @@ class sigma:
     if type(x) == list:
       grad_x = self.grad(np.array(x))[0]
     else:
-      return None
+      grad_x = self.grad(x)[0]
     grad_x_unit = grad_x/la.norm(grad_x)
     quiver = ax.quiver(x[0], x[1], grad_x_unit[0], grad_x_unit[1],
                         width=width, scale=scale, zorder=zorder, alpha=alpha)
     return quiver
+
+  """
+  Funtion to compute and draw L^1.
+    * pc: [x,y] position of the centroid
+    * X: (N x 2) matrix of agents position from the centroid
+  """
+  def draw_L1(self, pc, P):
+      N = P.shape[0]
+      X = P - pc
+
+      sigma_val = self.value(P)
+      grad_pc = self.grad(np.array(pc))[0]
+      l1_sigma_hat = (grad_pc[:,None].T @ X.T) @ X
+
+      x_norms = np.zeros((N))
+      for i in range(N):
+          x_norms[i] = (X[i,:]) @ X[i,:].T
+          D_sqr = np.max(x_norms)
+
+      l1_sigma_hat = l1_sigma_hat / (N * D_sqr)
+      return l1_sigma_hat.flatten()
 
 # ----------------------------------------------------------------------
 # Scalar fields used in simulations

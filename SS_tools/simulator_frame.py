@@ -1,5 +1,7 @@
 import numpy as np
 
+from SS_tools.toolbox import L_sigma
+
 """
 Clase común a todas las simulac iones
   * x0: [t0, p0, v0, ...]
@@ -25,16 +27,7 @@ class sim_frame:
     * X: matriz de posiciones relativas al centroide (N x n)
   """
   def L_sigma(self, X, sigma, denom=None):
-    l_sigma_hat = sigma[:,None].T @ X
-    if denom == None:
-      x_norms = np.zeros((self.N))
-      for i in range(self.N):
-        x_norms[i] = X[i,:] @ X[i,:].T
-      D_sqr = np.max(x_norms)
-      l_sigma_hat = l_sigma_hat / (self.N * D_sqr)
-    else:
-      l_sigma_hat = l_sigma_hat/denom
-    return l_sigma_hat.flatten()
+    return L_sigma(X, sigma, denom)
 
   """
   Euler integrator.
