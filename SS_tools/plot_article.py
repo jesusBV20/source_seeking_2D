@@ -64,6 +64,9 @@ def calculate_a(N, alpha):
 
   return a
 
+"""
+Function to generate a regular polygon distribution
+"""
 def regpoly_formation(N,r,thetha0=0):
     d_theta = 2*np.pi/N
     theta = []
@@ -77,6 +80,24 @@ def regpoly_formation(N,r,thetha0=0):
             theta.append(d_theta*i + d_theta/4 + thetha0)
     
     return np.array([r*np.cos(theta), r*np.sin(theta)]).T
+
+"""
+Function to generate a non-uniform (dummy) "flower" distribution of N agents.
+"""
+def flower_formation(N, R, b=3):
+    P_form = np.array([[],[]]).T
+    while len(P_form) < N:
+        P1 = (np.random.rand(int(N/2),2) - 0.5)*2 * R/2 * b/2
+        P2 = (np.random.rand(int(N/8),2) - 0.5)*2 * R/5 * b/4
+        P = np.vstack([P1,P2])
+
+        p_r = np.sqrt(P[:,0]**2 + P[:,1]**2)
+        p_theta = np.arctan2(P[:,0], P[:,1])
+        r = R * np.cos(2*p_theta)**2 + b
+
+        P_form = np.vstack([P_form, P[(p_r <= r),:]])
+
+    return P_form[0:N,:]
 
 # ----------------------------------------------------------------------
 # Plotting functions
@@ -200,7 +221,7 @@ def clusters_plot(clusters, sigma_class, ag_rad = 0.2, c_rad = 0.3):
     plt.show()
 
 """
-Funtion to verify lemma 4
+Funtion to verify Lemma 4 and Proposition 3
 """
 def plot_polyreg(ax, N, r, theta0=0, legend=False, xlab=False, ylab=False, title_full=False):
     mu0 = np.array([30,20])
@@ -246,9 +267,9 @@ def plot_polyreg(ax, N, r, theta0=0, legend=False, xlab=False, ylab=False, title
         ax.set_title(r"N = {0:d}".format(N))
 
     if xlab:
-       ax.set_ylabel("$X$ [L]")
+       ax.set_xlabel("$X$ [L]")
     if ylab:
-        ax.set_xlabel("$Y$ [L]")
+        ax.set_ylabel("$Y$ [L]")
 
     # Lines
     ax.axhline(0, c="k", ls="-", lw=1.1)
@@ -267,6 +288,240 @@ def plot_polyreg(ax, N, r, theta0=0, legend=False, xlab=False, ylab=False, title
     vector2d(ax, [0,0], l_sigma*r/1.2, c="red", **kw_arrow)
     vector2d(ax, [0,0], l1_vec*r/1.3, c="green", **kw_arrow)
     vector2d(ax, [0,0], grad*r/1.4, c="k", **kw_arrow)
+
+    # Generate the legend
+    if legend:
+        arr1 = plt.scatter([],[],c='k'  ,marker=r'$\uparrow$',s=60)
+        arr2 = plt.scatter([],[],c='red',marker=r'$\uparrow$',s=60)
+        arr3 = plt.scatter([],[],c='green',marker=r'$\uparrow$',s=60)
+
+        leg = Legend(ax, [arr1, arr2, arr3], 
+                    [r"$\nabla \sigma (p_c)$ (Non-computed)",
+                    r"$L_{\sigma}$: Actual computed ascending direction",
+                    r"$L_1$ (Non-computed)"],
+                    loc="upper left", prop={'size': 10}, ncol=1)
+
+        ax.add_artist(leg)
+
+
+"""
+Function to verify Proposition 4
+"""
+def plot_rect(ax, lx, ly, legend=False, xlab=False, ylab=False):
+    N = 4
+    mu0 = np.array([30,20])
+    p0 = np.array([-10,-5])
+    scale = np.max([lx,ly])
+
+    # Generating the scalar field -------------
+    sigma_func = sigma_gauss(mu=mu0, max_intensity=100, dev=20)
+    sigma_test = sigma(sigma_func)
+
+    # Generate the formation -------------
+    phi = np.pi/3
+
+    X = regpoly_formation(N,1)
+
+    X[:,0] = X[:,0]*lx/2 
+    X[:,1] = X[:,1]*ly/2 
+    xc = np.sum(X, axis=0)/N
+
+    P = p0 + X
+    pc = p0 + xc
+
+    sigma_values = sigma_test.value(P)
+
+    # Compute gradient
+    grad = sigma_test.grad(pc)[0]
+    grad = grad/np.sqrt(grad[0]**2 + grad[1]**2)
+
+    # Compute L_sigma
+    l_sigma = L_sigma(P - pc, sigma_values)
+    l_sigma = l_sigma/np.sqrt(l_sigma[0]**2 + l_sigma[1]**2)
+
+    # Compute L_sigma^1
+    l1_vec = sigma_test.draw_L1(pc, P)
+    l1_vec = l1_vec/np.sqrt(l1_vec[0]**2 + l1_vec[1]**2)
+
+    # Plotting -------------
+    # Axis configuration
+    dr = scale/2 + scale/6 
+    ax.axis([-dr, dr, -dr, dr])
+    ax.set_aspect("equal")
+    ax.grid(True)
+
+    if xlab:
+       ax.set_xlabel("$X$ [L]")
+    if ylab:
+        ax.set_ylabel("$Y$ [L]")
+
+    # Lines
+    ax.axhline(0, c="k", ls="-", lw=1.1)
+    ax.axvline(0, c="k", ls="-", lw=1.1)
+
+    for n in range(N):
+        ax.plot([X[n-1,0], X[n,0]], [X[n-1,1], X[n,1]], "k--", alpha=0.6)
+
+    # Agents
+    for n in range(N):
+        icon = unicycle_patch(X[n,:], phi, "royalblue", **kw_patch_dyn(scale/2))
+        ax.add_patch(icon)
+
+    # Arrows
+    kw_arrow = kw_arrow_dyn((scale/2)**(1/1.5))
+    vector2d(ax, [0,0], l_sigma*scale/2/1.2, c="red", **kw_arrow)
+    vector2d(ax, [0,0], l1_vec*scale/2/1.3, c="green", **kw_arrow)
+    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow)
+
+    # Generate the legend
+    if legend:
+        arr1 = plt.scatter([],[],c='k'  ,marker=r'$\uparrow$',s=60)
+        arr2 = plt.scatter([],[],c='red',marker=r'$\uparrow$',s=60)
+        arr3 = plt.scatter([],[],c='green',marker=r'$\uparrow$',s=60)
+
+        leg = Legend(ax, [arr1, arr2, arr3], 
+                    [r"$\nabla \sigma (p_c)$ (Non-computed)",
+                    r"$L_{\sigma}$: Actual computed ascending direction",
+                    r"$L_1$ (Non-computed)"],
+                    loc="upper left", prop={'size': 10}, ncol=1)
+
+        ax.add_artist(leg)
+
+"""
+Function to verify Proposition 5 & 6
+"""
+def plot_flower(ax, N, r, b=3, legend=False, xlab=False, ylab=False):
+    mu0 = np.array([30,20])
+    p0 = np.array([-10,-5])
+    scale = 2*r + 2*b
+
+    # Generating the scalar field -------------
+    sigma_func = sigma_gauss(mu=mu0, max_intensity=100, dev=20)
+    sigma_test = sigma(sigma_func)
+
+    # Generate the formation -------------
+    X = flower_formation(N, r, b)
+    xc = np.sum(X, axis=0)/N
+
+    P = p0 + X
+    pc = p0 + xc
+
+    sigma_values = sigma_test.value(P)
+
+    # Compute gradient
+    grad = sigma_test.grad(pc)[0]
+    grad = grad/np.sqrt(grad[0]**2 + grad[1]**2)
+
+    # Compute L_sigma
+    l_sigma = L_sigma(P - pc, sigma_values)
+    l_sigma = l_sigma/np.sqrt(l_sigma[0]**2 + l_sigma[1]**2)
+
+    # Compute L_sigma^1
+    l1_vec = sigma_test.draw_L1(pc, P)
+    l1_vec = l1_vec/np.sqrt(l1_vec[0]**2 + l1_vec[1]**2)
+
+    # Plotting -------------
+    # Axis configuration
+    dr = scale/2 + scale/6 
+    ax.axis([-dr, dr, -dr, dr])
+    ax.set_aspect("equal")
+    ax.grid(True)
+
+    ax.set_title("N = {0:d}, r = {1:.0f}, b = {2:.0f}".format(N,r,b))
+    
+    if xlab:
+       ax.set_xlabel("$X$ [L]")
+    if ylab:
+        ax.set_ylabel("$Y$ [L]")
+
+    # Lines
+    ax.axhline(0, c="k", ls="-", lw=1.1)
+    ax.axvline(0, c="k", ls="-", lw=1.1)
+    
+    # Agents
+    for n in range(N):
+        ax.add_patch(plt.Circle(X[n], 0.05*r**(1/2), color="royalblue", alpha=0.8))
+
+    # Arrows
+    kw_arrow = kw_arrow_dyn((scale/2)**(1/1.5))
+    vector2d(ax, [0,0], l_sigma*scale/2/1.2, c="red", **kw_arrow)
+    vector2d(ax, [0,0], l1_vec*scale/2/1.3, c="green", **kw_arrow)
+    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow)
+
+    # Generate the legend
+    if legend:
+        arr1 = plt.scatter([],[],c='k'  ,marker=r'$\uparrow$',s=60)
+        arr2 = plt.scatter([],[],c='red',marker=r'$\uparrow$',s=60)
+        arr3 = plt.scatter([],[],c='green',marker=r'$\uparrow$',s=60)
+
+        leg = Legend(ax, [arr1, arr2, arr3], 
+                    [r"$\nabla \sigma (p_c)$ (Non-computed)",
+                    r"$L_{\sigma}$: Actual computed ascending direction",
+                    r"$L_1$ (Non-computed)"],
+                    loc="upper left", prop={'size': 10}, ncol=1)
+
+        ax.add_artist(leg)
+
+"""
+Function to show what happens if the formation have S0 and S1
+"""
+def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
+    mu0 = np.array([30,20])
+    p0 = np.array([-10,-5])
+    scale = np.max(lims)*1.5
+
+    # Generating the scalar field -------------
+    sigma_func = sigma_gauss(mu=mu0, max_intensity=100, dev=20)
+    sigma_test = sigma(sigma_func)
+
+    # Generate the formation -------------
+    X = batman_distrib(N, [0,0], lims)
+    xc = np.sum(X, axis=0)/N
+
+    P = p0 + X
+    pc = p0 + xc
+
+    sigma_values = sigma_test.value(P)
+
+    # Compute gradient
+    grad = sigma_test.grad(pc)[0]
+    grad = grad/np.sqrt(grad[0]**2 + grad[1]**2)
+
+    # Compute L_sigma
+    l_sigma = L_sigma(P - pc, sigma_values)
+    l_sigma = l_sigma/np.sqrt(l_sigma[0]**2 + l_sigma[1]**2)
+
+    # Compute L_sigma^1
+    l1_vec = sigma_test.draw_L1(pc, P)
+    l1_vec = l1_vec/np.sqrt(l1_vec[0]**2 + l1_vec[1]**2)
+
+    # Plotting -------------
+    # Axis configuration
+    dr = scale/2 + scale/6 
+    ax.axis([-dr, dr, -dr, dr])
+    ax.set_aspect("equal")
+    ax.grid(True)
+
+    ax.set_title("N = {0:d}".format(N))
+    
+    if xlab:
+       ax.set_xlabel("$X$ [L]")
+    if ylab:
+        ax.set_ylabel("$Y$ [L]")
+
+    # Lines
+    ax.axhline(0, c="k", ls="-", lw=1.1)
+    ax.axvline(0, c="k", ls="-", lw=1.1)
+    
+    # Agents
+    for n in range(N):
+        ax.add_patch(plt.Circle(X[n], 0.02*scale**(1/2), color="royalblue", alpha=0.8))
+
+    # Arrows
+    kw_arrow = kw_arrow_dyn((scale/2)**(1/1.5))
+    vector2d(ax, [0,0], l_sigma*scale/2/1.2, c="red", **kw_arrow)
+    vector2d(ax, [0,0], l1_vec*scale/2/1.3, c="green", **kw_arrow)
+    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow)
 
     # Generate the legend
     if legend:
