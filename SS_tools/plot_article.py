@@ -1,4 +1,6 @@
 import numpy as np
+from scipy.linalg import kron
+from scipy.integrate import odeint
 
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
@@ -98,6 +100,24 @@ def flower_formation(N, R, b=3):
         P_form = np.vstack([P_form, P[(p_r <= r),:]])
 
     return P_form[0:N,:]
+
+"""
+Centroid estimator tools
+"""
+def build_B(list_edges, n):
+    B = np.zeros((n,len(list_edges)))
+    for i in range(len(list_edges)):
+        B[list_edges[i][0]-1, i] = 1
+        B[list_edges[i][1]-1, i] = -1
+    return B
+
+def build_Laplacian(B):
+    L = B.dot(B.T)
+    return L
+
+def estimate_centroid_dyn(qchat0, t, Lb, sum_qij):
+    dqchat_dt = -Lb.dot(qchat0) -Lb.dot(sum_qij)
+    return dqchat_dt
 
 # ----------------------------------------------------------------------
 # Plotting functions
@@ -515,7 +535,7 @@ def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
     
     # Agents
     for n in range(N):
-        ax.add_patch(plt.Circle(X[n], 0.02*scale**(1/2), color="royalblue", alpha=0.8))
+        ax.add_patch(plt.Circle(X[n], 0.01*scale**(1/2), color="royalblue", alpha=0.8))
 
     # Arrows
     kw_arrow = kw_arrow_dyn((scale/2)**(1/1.5))
@@ -534,5 +554,83 @@ def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
                     r"$L_{\sigma}$: Actual computed ascending direction",
                     r"$L_1$ (Non-computed)"],
                     loc="upper left", prop={'size': 10}, ncol=1)
+
+        ax.add_artist(leg)
+
+
+"""
+Function to simulate the centroid estimation algorithm with polyshapes
+"""
+def plot_centroid(ax, N, r, tf, f_inv, legend=False, xlab=False, ylab=False):
+    scale = r
+
+    # Generate the formation -------------
+    phi = np.pi/3
+    
+    X = regpoly_formation(N,r)
+    xc = np.sum(X, axis=0)/N
+
+    # Generate the graph -------------
+    edges = []
+    n_list = np.arange(0,N)+1
+    for i in range(N):
+        edges.append((n_list[i-1],n_list[i]))
+
+    # Centroid estimation -------------
+    q0 = X.flatten()
+    B = build_B(edges, N)
+    L = build_Laplacian(B)
+
+    Lb = kron(L, np.eye(2))
+
+    # Simulation
+    t = np.linspace(0, tf, int(f_inv*tf+1))
+    qchat0 = np.zeros_like(q0)
+    qchat = odeint(estimate_centroid_dyn, qchat0, t, args=(Lb,q0,))
+
+    xc_est0 = q0.reshape(X.shape)
+    xc_est = (q0 + qchat[-1]).reshape(X.shape)
+
+    # Plotting -------------
+    # Axis configuration
+    dr = r + r/6
+    ax.axis([-dr, dr, -dr, dr])
+    ax.set_aspect("equal")
+    ax.grid(True)
+
+    ax.set_title(r"$N$ = {0:d}, $t_f$ = {1:.0f} ms, $f$ = {2:.0f} MHz".format(N,tf*1000,f_inv/1e6))
+    
+    if xlab:
+       ax.set_xlabel("$X$ [L]")
+    if ylab:
+        ax.set_ylabel("$Y$ [L]")
+
+    # Lines
+    ax.axhline(0, c="k", ls="-", lw=1.1)
+    ax.axvline(0, c="k", ls="-", lw=1.1)
+
+    for edge in edges:
+        ax.plot([X[edge[0]-1,0], X[edge[1]-1,0]], [X[edge[0]-1,1], X[edge[1]-1,1]], "k--", alpha=0.6)
+
+    # Agents
+    for n in range(N):
+        icon = unicycle_patch(X[n,:], phi, "royalblue", **kw_patch_dyn(r))
+        ax.add_patch(icon)
+
+    # Points
+    ax.scatter(xc[0], xc[1], c="k", marker=r"$x$", s=scale*100)
+    ax.scatter(xc_est0[:,0], xc_est0[:,1], c="red", marker=r"$x$", alpha=0.4, s=scale*100)
+    ax.scatter(xc_est[:,0], xc_est[:,1]  , c="red", marker=r"$x$", s=scale*100)
+
+
+    # Generate the legend
+    if legend:
+        mrk1 = plt.scatter([],[],c='k'  ,marker=r'$x$',s=60)
+        mrk2 = plt.scatter([],[],c='red',marker=r'$x$',s=60)
+
+        leg = Legend(ax, [mrk1, mrk2], 
+                    [r"$p_c$ (Non-computed)",
+                    r"${p_{c}}^i$: Actual computed centroid from $i$"],
+                    loc="upper left", prop={'size': 12}, ncol=1)
 
         ax.add_artist(leg)
