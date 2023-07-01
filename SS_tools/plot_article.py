@@ -5,9 +5,19 @@ from matplotlib.patches import Rectangle
 from matplotlib.legend import Legend # two legends
 
 from SS_tools.toolbox import *
+from SS_tools.scalar_field import *
 
 KW_ARROW = {"lw":3, "hw":0.7, "hl":1}
 KW_PATCH = {"size":1.5, "lw":0.5}
+
+KW_ARROW_TINY = {"lw":2, "hw":0.05, "hl":0.1}
+KW_PATCH_TINY = {"size":0.15, "lw":0.2}
+
+def kw_arrow_dyn(scale):
+    return {"lw":2*scale**(1/5), "hw":0.05*scale, "hl":0.1*scale}
+
+def kw_patch_dyn(scale):
+    return {"size":0.15*scale, "lw":0.2*scale**(1/2)}
 
 # ----------------------------------------------------------------------
 # Utility functions
@@ -53,6 +63,20 @@ def calculate_a(N, alpha):
     j = j + 1
 
   return a
+
+def regpoly_formation(N,r,thetha0=0):
+    d_theta = 2*np.pi/N
+    theta = []
+
+    for i in range(N):
+        if N == 2:
+            theta.append(d_theta*i + thetha0)
+        elif N%2 == 0:
+            theta.append(d_theta*i + d_theta/2 + thetha0)
+        else:
+            theta.append(d_theta*i + d_theta/4 + thetha0)
+    
+    return np.array([r*np.cos(theta), r*np.sin(theta)]).T
 
 # ----------------------------------------------------------------------
 # Plotting functions
@@ -174,3 +198,86 @@ def clusters_plot(clusters, sigma_class, ag_rad = 0.2, c_rad = 0.3):
 
     # Show the plot!
     plt.show()
+
+"""
+Funtion to verify lemma 4
+"""
+def plot_polyreg(ax, N, r, theta0=0, legend=False, xlab=False, ylab=False, title_full=False):
+    mu0 = np.array([30,20])
+    p0 = np.array([-10,-5])
+
+    # Generating the scalar field -------------
+    sigma_func = sigma_gauss(mu=mu0, max_intensity=100, dev=20)
+    sigma_test = sigma(sigma_func)
+
+    # Generate the formation -------------
+    phi = np.pi/4
+
+    X = regpoly_formation(N,r,theta0)
+    xc = np.sum(X, axis=0)/N
+
+    P = p0 + X
+    pc = p0 + xc
+
+    sigma_values = sigma_test.value(P)
+
+    # Compute gradient
+    grad = sigma_test.grad(pc)[0]
+    grad = grad/np.sqrt(grad[0]**2 + grad[1]**2)
+
+    # Compute L_sigma
+    l_sigma = L_sigma(P - pc, sigma_values)
+    l_sigma = l_sigma/np.sqrt(l_sigma[0]**2 + l_sigma[1]**2)
+
+    # Compute L_sigma^1
+    l1_vec = sigma_test.draw_L1(pc, P)
+    l1_vec = l1_vec/np.sqrt(l1_vec[0]**2 + l1_vec[1]**2)
+
+    # Plotting -------------
+    # Axis configuration
+    dr = r + r/6
+    ax.axis([-dr, dr, -dr, dr])
+    ax.set_aspect("equal")
+    ax.grid(True)
+    
+    if title_full:
+        ax.set_title(r"N = {0:d}, $\theta$ = {1:.0f} deg.".format(N, theta0*180/np.pi))
+    else:
+        ax.set_title(r"N = {0:d}".format(N))
+
+    if xlab:
+       ax.set_ylabel("$X$ [L]")
+    if ylab:
+        ax.set_xlabel("$Y$ [L]")
+
+    # Lines
+    ax.axhline(0, c="k", ls="-", lw=1.1)
+    ax.axvline(0, c="k", ls="-", lw=1.1)
+
+    for n in range(N):
+        ax.plot([X[n-1,0], X[n,0]], [X[n-1,1], X[n,1]], "k--", alpha=0.6)
+
+    # Agents
+    for n in range(N):
+        icon = unicycle_patch(X[n,:], phi, "royalblue", **kw_patch_dyn(r))
+        ax.add_patch(icon)
+
+    # Arrows
+    kw_arrow = kw_arrow_dyn(r**(1/1.5))
+    vector2d(ax, [0,0], l_sigma*r/1.2, c="red", **kw_arrow)
+    vector2d(ax, [0,0], l1_vec*r/1.3, c="green", **kw_arrow)
+    vector2d(ax, [0,0], grad*r/1.4, c="k", **kw_arrow)
+
+    # Generate the legend
+    if legend:
+        arr1 = plt.scatter([],[],c='k'  ,marker=r'$\uparrow$',s=60)
+        arr2 = plt.scatter([],[],c='red',marker=r'$\uparrow$',s=60)
+        arr3 = plt.scatter([],[],c='green',marker=r'$\uparrow$',s=60)
+
+        leg = Legend(ax, [arr1, arr2, arr3], 
+                    [r"$\nabla \sigma (p_c)$ (Non-computed)",
+                    r"$L_{\sigma}$: Actual computed ascending direction",
+                    r"$L_1$ (Non-computed)"],
+                    loc="upper left", prop={'size': 10}, ncol=1)
+
+        ax.add_artist(leg)
