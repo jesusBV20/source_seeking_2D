@@ -33,6 +33,27 @@ def plot_sregion(ax,pc,l1,l2):
                            fill = False, lw=2, linestyle="--"))
     ax.text(p_rect[0] + 1.05*l1_, p_rect[1], r"$\mathcal{S}$")
 
+"""
+Funcion to distribute the agents following a geometric series
+"""
+def calculate_a(N, alpha):
+
+  a = np.zeros(N)
+  a[0] = 1
+
+  for i in range(1,int(N/2)-1):
+    a[i] = a[i-1]*alpha
+
+  a[int(N/2)-1] = -(np.sum(a) - 1 - N/4)
+  a = np.sqrt(a)
+
+  j = 1
+  for i in range(int(N/2), N):
+    a[i] = -a[int(N/2)-j]
+    j = j + 1
+
+  return a
+
 # ----------------------------------------------------------------------
 # Plotting functions
 # ----------------------------------------------------------------------
@@ -68,8 +89,8 @@ def clusters_plot(clusters, sigma_class, ag_rad = 0.2, c_rad = 0.3):
     sigma_class.draw(fig=fig, ax=main_ax, xlim=60, ylim=40, n=300, contour_levels=20)
 
     # Axis configuration
-    main_ax.set_xlim([-30,60])
-    main_ax.set_ylim([-20,40])
+    main_ax.set_xlim([-30,70])
+    main_ax.set_ylim([-20,30])
     main_ax.set_xlabel(r"$P_x$ [L]")
     main_ax.set_ylabel(r"$P_y$ [L]")
     main_ax.grid(True)
