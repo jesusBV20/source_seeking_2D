@@ -158,7 +158,6 @@ def createDir(dir):
   except:
     print("¡El directorio '{}' ya existe!".format(dir))
 
-
 # ----------------------------------------------------------------------
 # Utility functions for simulations
 # ----------------------------------------------------------------------
