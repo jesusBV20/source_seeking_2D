@@ -5,6 +5,7 @@ from scipy.integrate import odeint
 import matplotlib.pyplot as plt
 from matplotlib.patches import Rectangle
 from matplotlib.legend import Legend # two legends
+from matplotlib.animation import FuncAnimation
 
 from SS_tools.toolbox import *
 from SS_tools.scalar_field import *
@@ -583,6 +584,10 @@ def plot_centroid(ax, N, r, tf, f_inv, legend=False, xlab=False, ylab=False):
 
     Lb = kron(L, np.eye(2))
 
+    # Algebraic connectivity
+    eig_vals = np.linalg.eigvals(L)
+    min_eig_val = np.min(eig_vals[eig_vals > 0])
+
     # Simulation
     t = np.linspace(0, tf, int(f_inv*tf+1))
     qchat0 = np.zeros_like(q0)
@@ -598,7 +603,9 @@ def plot_centroid(ax, N, r, tf, f_inv, legend=False, xlab=False, ylab=False):
     ax.set_aspect("equal")
     ax.grid(True)
 
-    ax.set_title(r"$N$ = {0:d}, $t_f$ = {1:.0f} ms, $f$ = {2:.0f} MHz".format(N,tf*1000,f_inv/1e6))
+    title = r"$N$ = {0:d}, $t_f$ = {1:.0f} ms, $f$ = {2:.1f} MHz".format(N,tf*1000,f_inv/1e6) + "\n"
+    title = title + r"$\lambda_2$ = {0:.2f}".format(min_eig_val)
+    ax.set_title(title)
     
     if xlab:
        ax.set_xlabel("$X$ [L]")
@@ -634,3 +641,115 @@ def plot_centroid(ax, N, r, tf, f_inv, legend=False, xlab=False, ylab=False):
                     loc="upper left", prop={'size': 12}, ncol=1)
 
         ax.add_artist(leg)
+
+
+"""
+Funtion to animate the centroid estimation algorithm with polyshapes
+"""
+def anim_centroid(N, r, tf, f_inv, dt=0.1):
+    scale = r
+
+    # Generate the formation -------------
+    phi = np.pi/3
+    
+    X = regpoly_formation(N,r)
+    xc = np.sum(X, axis=0)/N
+
+    # Generate the graph -------------
+    edges = []
+    n_list = np.arange(0,N)+1
+    for i in range(N):
+        edges.append((n_list[i-1],n_list[i]))
+        edges.append((n_list[i-3],n_list[i]))
+
+    # Centroid estimation -------------
+    q0 = X.flatten()
+    B = build_B(edges, N)
+    L = build_Laplacian(B)
+    Lb = kron(L, np.eye(2))
+
+    # Algebraic connectivity
+    eig_vals = np.linalg.eigvals(L)
+    min_eig_val = np.min(eig_vals[eig_vals > 0])
+
+    # Simulation
+    t = np.linspace(0, tf, int(f_inv*tf+1))
+    qchat0 = np.zeros_like(q0)
+    qchat = odeint(estimate_centroid_dyn, qchat0, t, args=(Lb,q0,))
+
+    xc_est = (q0 + qchat).reshape((len(qchat), *X.shape))
+
+    #########################
+    # Initial plotting
+    #########################
+    fig = plt.figure(figsize=(10, 10), dpi=70)
+    ax  = fig.subplots()
+
+    # Axis configuration
+    dr = r + r/6
+    ax.axis([-dr, dr, -dr, dr])
+    ax.set_aspect("equal")
+    ax.grid(True)
+
+    title = r"$N$ = {0:d}, $t_f$ = {1:.1f} s, $f$ = {2:.1f} MHz".format(N,0,f_inv/1e6)
+    title = title + r" $\lambda_2$ = {0:.3f}".format(min_eig_val)
+    ax.set_title(title)
+    ax.set_xlabel("$X$ [L]")
+    ax.set_ylabel("$Y$ [L]")
+
+    # Lines
+    ax.axhline(0, c="k", ls="-", lw=1.1)
+    ax.axvline(0, c="k", ls="-", lw=1.1)
+
+    for edge in edges:
+        ax.plot([X[edge[0]-1,0], X[edge[1]-1,0]], [X[edge[0]-1,1], X[edge[1]-1,1]], "k--", alpha=0.6)
+
+    # Agents
+    for n in range(N):
+        icon = unicycle_patch(X[n,:], phi, "royalblue", **kw_patch_dyn(r))
+        ax.add_patch(icon)
+
+    # Points
+    ax.scatter(xc[0], xc[1], c="k", marker=r"$x$", s=scale*100)
+    pts, = ax.plot(xc_est[0,:,0], xc_est[0,:,1], "r", linestyle = "None", marker=r"$x$", markersize=scale*10)
+
+
+    # Generate the legend
+    mrk1 = plt.scatter([],[],c='k'  ,marker=r'$x$',s=60)
+    mrk2 = plt.scatter([],[],c='red',marker=r'$x$',s=60)
+
+    leg = Legend(ax, [mrk1, mrk2], 
+                [r"$p_c$ (Non-computed)",
+                r"${p_{c}}^i$: Actual computed centroid from $i$"],
+                loc="upper left", prop={'size': 12}, ncol=1)
+
+    ax.add_artist(leg)
+
+    #########################
+    # Building the animation
+    #########################
+    anim_frames = int(tf/dt)
+    rate_f_dt = int(f_inv / anim_frames)
+
+    # Function to update the animation
+    def animate(i):
+        # Update the centroid estimation markers
+        li = rate_f_dt*i
+        pts.set_data(xc_est[li,:,0], xc_est[li,:,1])
+
+        # Update the title
+        title = r"$N$ = {0:d}, $t_f$ = {1:.1f} s, $f$ = {2:.1f} MHz,".format(N,i*dt,f_inv/1e6)
+        title = title + r" $\lambda_2$ = {0:.3f}".format(min_eig_val)
+        ax.set_title(title)
+
+        #if (i % int((anim_frames-1)/10) == 0):
+        #    print("tf = {0:>5.2f} | {1:.2%}".format(i*dt, i/(anim_frames-1)))
+
+    # Generate the animation
+    print("Simulating {0:d} frames...".format(anim_frames))
+    anim = FuncAnimation(fig, animate, frames=anim_frames, interval=1000/60)
+    anim.embed_limit = 40
+    
+    # Close plots and return the animation class to be compiled
+    plt.close()
+    return anim

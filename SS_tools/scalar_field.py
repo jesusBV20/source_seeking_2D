@@ -97,6 +97,7 @@ class sigma:
 
     P = np.array([list(X.flatten()), list(Y.flatten())]).T
     Z = self.value(P).reshape(n,n)
+    Z = np.rot90(Z.T)
 
     if make_im:
       extent = np.min(x), np.max(x), np.min(y), np.max(y)

@@ -455,7 +455,7 @@ def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", fi
             print("tf = {0:>5.2f} | {1:.2%}".format(i*dt, i/(anim_frames-1)))
 
     # Generate the animation
-    print("Simulando {0:d} frames... \nEstado:".format(anim_frames))
+    print("Simulating {0:d} frames... \nProgress:".format(anim_frames))
     anim = FuncAnimation(fig, animate, frames=anim_frames, interval=1000/60)
     anim.embed_limit = 40
     
@@ -849,7 +849,7 @@ def anim_class2(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD"):
             print("tf = {0:>5.2f} | {1:.2%}".format(i*dt, i/(anim_frames-1)))
 
     # Generate the animation
-    print("Simulando {0:d} frames... \nEstado:".format(anim_frames))
+    print("Simulating {0:d} frames... \nProgress:".format(anim_frames))
     anim = FuncAnimation(fig, animate, frames=anim_frames, interval=1000/60)
     anim.embed_limit = 40
     
