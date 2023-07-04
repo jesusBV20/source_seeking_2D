@@ -523,7 +523,9 @@ def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
     ax.set_aspect("equal")
     ax.grid(True)
 
-    ax.set_title("N = {0:d}".format(N))
+    title = r"$N$ = {0:d}".format(N)
+    #title = title + r"$L_X$ = {0:.1f}, $L_Y$ = {1:.1f}".format(lims[0],lims[1])
+    ax.set_title(title)
     
     if xlab:
        ax.set_xlabel("$X$ [L]")
