@@ -3,7 +3,7 @@
 
 This repository is maintained by Jesús Bautista Villar, who is currently conducting Python simulations to validate the results and findings presented in an ongoing work-in-progress article:
 
-    @article{abyjg2021resilientss,
+    @article{abyjg2023resilientss,
       title={Resilient source seeking with a robot swarm},
       author={Antonio Acuaviva, Jesus Bautista, Weijia Yao, Juan Jimenez, Hector Garcia de Marina},
       year={2023},
