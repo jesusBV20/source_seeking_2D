@@ -70,7 +70,7 @@ Simulation Class I
 
 """
 class simulation_class1(sim_frame):
-  def __init__(self, sigma_field, n_agents, x0, dt = 0.01, mod_shape = False, obstacles = []):
+  def __init__(self, sigma_field, n_agents, x0, dt = 0.01, mod_shape = False, obstacles = [], ang_noise = 0):
     t0 = x0[0]
     p0 = x0[1]
     v0 = x0[2]
@@ -102,6 +102,7 @@ class simulation_class1(sim_frame):
     self.mod_shape = mod_shape                         # Geometry control switch
     self.Xd = self.X                                   # Desired geometry
     self.obstacles = obstacles                         # Simulation obstacles
+    self.ang_noise = ang_noise
 
     # Initialise the simulation telemetry dictionary
     self.update_telemetry()
@@ -137,13 +138,23 @@ class simulation_class1(sim_frame):
     * sigma: Vector with sigma_field measurements of each agent (N x 1).
   """
   def free_kinematics(self, X):
+    # compute l_sigma
     l_sigma_hat = self.L_sigma(X, self.sigma)
     l_sigma_hat_norm = la.norm(l_sigma_hat)
+
     if l_sigma_hat_norm != 0:
-      self.l_sigma_hat = l_sigma_hat / l_sigma_hat_norm
+      self.l_sigma_hat = l_sigma_hat[:] / l_sigma_hat_norm
     else:
       self.l_sigma_hat = np.zeros(2)
-    p_dot = self.vf * self.l_sigma_hat * np.ones(X.shape)
+    
+    # virtual noise in l_sigma_hat
+    if self.ang_noise > 0:
+      alfa = (np.random.rand(self.N) - 0.5) * 2 * self.ang_noise / 180 * np.pi
+      R_alfa = np.array([[np.cos(alfa), -np.sin(alfa)], [np.sin(alfa), np.cos(alfa)]])
+      l_sigma_hat = np.squeeze(self.l_sigma_hat[:,None].T @ R_alfa).T  
+
+    # compute p_dot
+    p_dot = self.vf * l_sigma_hat
     return p_dot
 
   def shape_control(self):

@@ -118,7 +118,7 @@ def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=No
     ddata_ax.yaxis.tick_right()
     ddata_ax.grid(True)
     edata_ax.set_xlabel(r"$t$ [T]")
-    edata_ax.set_ylabel(r"$||r_c - r^*||$ [L]")
+    edata_ax.set_ylabel(r"$||p_\sigma - p_c||$ [L]")
     edata_ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
     edata_ax.yaxis.tick_right()
     edata_ax.grid(True)
@@ -131,7 +131,7 @@ def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=No
         sim.sigma_field.rot = field_rot[li]
     sim.sigma_field.draw(fig, main_ax, **kw_draw_field)
 
-    main_ax.set_title("N = {1:d} agents".format(sim.tf, sim.N))
+    main_ax.set_title("N = {1:d} robots".format(sim.tf, sim.N))
     main_ax.grid(True)
 
     # Plot agents
@@ -283,7 +283,7 @@ def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", fi
     ddata_ax.yaxis.tick_right()
     ddata_ax.grid(True)
     edata_ax.set_xlabel(r"$t$ [T]")
-    edata_ax.set_ylabel(r"$||r_c - r^*||$ [L]")
+    edata_ax.set_ylabel(r"$||p_\sigma - p_c||$ [L]")
     edata_ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
     edata_ax.yaxis.tick_right()
     edata_ax.grid(True)
@@ -432,7 +432,7 @@ def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", fi
             q_Lsig.set_offsets(np.array([2*xlim, 2*ylim]).T)
 
         # string format: https://www.w3schools.com/python/ref_string_format.asp
-        txt_title.set_text('Frame = {0:>4} | Tf = {1:>5.2f} [T] | N = {2:>4} agents'.format(i, i*dt, sim.N))
+        txt_title.set_text('Frame = {0:>4} | Tf = {1:>5.2f} [T] | N = {2:>4} robots'.format(i, i*dt, sim.N))
 
         sigma_line.set_xdata(i*dt)
         dline.set_xdata(i*dt)
@@ -545,7 +545,7 @@ def plot_class2(data_col, sim, t_list = None, tail_time=None):
     ddata_ax.yaxis.tick_right()
     ddata_ax.grid(True)
     edata_ax.set_xlabel(r"$t$ [T]")
-    edata_ax.set_ylabel(r"$||r_c - r^*||$ [L]")
+    edata_ax.set_ylabel(r"$||p_\sigma - p_c||$ [L]")
     edata_ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
     edata_ax.yaxis.tick_right()
     edata_ax.grid(True)
@@ -555,7 +555,7 @@ def plot_class2(data_col, sim, t_list = None, tail_time=None):
     #############
     sim.sigma_field.draw(fig, main_ax, **kw_draw_field)
 
-    main_ax.set_title("t = {0:.2f} [T] | N = {1:d} agents".format(sim.tf, sim.N))
+    main_ax.set_title("t = {0:.2f} [T] | N = {1:d} robots".format(sim.tf, sim.N))
     main_ax.grid(True)
 
     # Agents
@@ -702,7 +702,7 @@ def anim_class2(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD"):
     ddata_ax.yaxis.tick_right()
     ddata_ax.grid(True)
     edata_ax.set_xlabel(r"$t$ [T]")
-    edata_ax.set_ylabel(r"$||r_c - r^*||$ [L]")
+    edata_ax.set_ylabel(r"$||p_\sigma - p_c||$ [L]")
     edata_ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
     edata_ax.yaxis.tick_right()
     edata_ax.grid(True)
@@ -825,7 +825,7 @@ def anim_class2(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD"):
             q_Lsig.set_offsets(np.array([2*xlim, 2*ylim]).T)
 
         # string format: https://www.w3schools.com/python/ref_string_format.asp
-        txt_title.set_text('Frame = {0:>4} | Tf = {1:>5.2f} [T] | N = {2:>4} agents'.format(i, i*dt, sim.N))
+        txt_title.set_text('Frame = {0:>4} | Tf = {1:>5.2f} [T] | N = {2:>4} robots'.format(i, i*dt, sim.N))
 
         sigma_line.set_xdata(i*dt)
         omega_line.set_xdata(i*dt)
