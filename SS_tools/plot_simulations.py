@@ -53,7 +53,7 @@ kw_draw_field = {"xlim":2*xlim, "ylim":2*ylim, "n":400, "contour_levels":0}
 # Static Plot Class I #
 #######################
 
-def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=None):
+def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=None, d_max=0):
     # Init and final elements from data
     if t_list is None:
         li_list = np.array([0, data_col.get("pf").shape[0]-1], dtype=int)
@@ -196,7 +196,10 @@ def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=No
     sigma_data_ax.axhline(sim.sigma_field.value(np.array(sim.sigma_field.mu)), c="k", ls="--", lw=1.2)
     ddata_ax.axhline(0, c="k", ls="--", lw=1.2)
     edata_ax.axhline(0, c="k", ls="--", lw=1.2)
-    
+
+    if d_max > 0:
+        ddata_ax.axhline(d_max, c="k", ls="--", lw=0.8, alpha=0.6)
+
     for n in range(sim.N):
         sigma_data_ax.plot(time_vec, sigma_data[:,n], c=color[n], lw=lw[n], zorder=z_order[n])
         ddata_ax.plot(time_vec, ddata[:,n], c=color[n], lw=lw[n], zorder=z_order[n])
@@ -210,7 +213,7 @@ def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=No
 # Animation Plot Class I #
 ##########################
 
-def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", field_rot_sw=False):
+def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", field_rot_sw=False, d_max=0):
 
     # Get data from the Data Collector
     xdata = data_col.get("pf")[..., 0]
@@ -287,7 +290,6 @@ def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", fi
     edata_ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
     edata_ax.yaxis.tick_right()
     edata_ax.grid(True)
-
 
     #############
     # MAIN axis
@@ -372,12 +374,16 @@ def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", fi
         sigma_lines_data.append(sigma_line_data)
         ddata_lines_data.append(ddata_line_data)
     edata_ax.plot(time_vec, edata[0:len(time_vec)], c="k", lw=1.2)
+    ddata_ax.axhline(0, c="k", ls="--", lw=1.2, alpha=0.6)
+
+    if d_max > 0:
+        ddata_ax.axhline(d_max, c="k", ls="--", lw=0.8, alpha=0.6)
 
     sigma_data_ax.axhline(sim.sigma_field.value(np.array(sim.sigma_field.mu)), c="k", ls="--", lw=1.2)
     sigma_line = sigma_data_ax.axvline(0, c="k", ls="--", lw=1.2)
     dline = ddata_ax.axvline(0, c="k", ls="--", lw=1.2)
     eline = edata_ax.axvline(0, c="k", ls="--", lw=1.2)
-
+    
 
     #########################
     # Building the animation

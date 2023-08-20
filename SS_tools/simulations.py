@@ -1,7 +1,7 @@
 import numpy as np
 from numpy import linalg as la
 
-from SS_tools.toolbox import angle_of_vectors
+from SS_tools.toolbox import angle_of_vectors, M_rot
 from SS_tools.simulator_frame import sim_frame
 
 # ----------------------------------------------------------------------
@@ -38,7 +38,7 @@ class data_collector:
     self.data["tf"] = self.simulation.sim_telm["tf"]
     for label in self.data_labels:
       self.data[label].append(self.simulation.sim_telm[label])
-  
+
   """
   Extract the desired field.
   """
@@ -70,7 +70,7 @@ Simulation Class I
 
 """
 class simulation_class1(sim_frame):
-  def __init__(self, sigma_field, n_agents, x0, dt = 0.01, mod_shape = False, obstacles = [], ang_noise = 0):
+  def __init__(self, sigma_field, n_agents, x0, dt = 0.01, mod_shape = False, obstacles = [], ang_noise = 0, it_noise = 4):
     t0 = x0[0]
     p0 = x0[1]
     v0 = x0[2]
@@ -94,15 +94,20 @@ class simulation_class1(sim_frame):
     self.rc_sigma = self.sigma_field.value(self.rc)[0] # Sigma at the centroid
     self.X = p0 - self.rc                              # Swarm geometry
     self.d = la.norm(self.X, axis=1)                   # Distance to the centroid
-
     self.l_sigma_hat = np.zeros(2)
     self.rc_grad = self.sigma_field.grad(self.rc)[0]
 
     # Useful variables for this simulation
     self.mod_shape = mod_shape                         # Geometry control switch
+    self.static_mod_shape = 0
     self.Xd = self.X                                   # Desired geometry
     self.obstacles = obstacles                         # Simulation obstacles
+
+    # Variables to generate noise in the computation of l_sigma
     self.ang_noise = ang_noise
+    self.it_noise = it_noise
+    self.alfa_noise = 0
+    self.cnt_noise = it_noise
 
     # Initialise the simulation telemetry dictionary
     self.update_telemetry()
@@ -147,18 +152,22 @@ class simulation_class1(sim_frame):
     else:
       self.l_sigma_hat = np.zeros(2)
     
-    # virtual noise in l_sigma_hat
+    # virtual noise in l_sigma_hat (new bias each "noise_it" interations)
     if self.ang_noise > 0:
-      alfa = (np.random.rand(self.N) - 0.5) * 2 * self.ang_noise / 180 * np.pi
-      R_alfa = np.array([[np.cos(alfa), -np.sin(alfa)], [np.sin(alfa), np.cos(alfa)]])
-      l_sigma_hat = np.squeeze(self.l_sigma_hat[:,None].T @ R_alfa).T  
+      if self.cnt_noise >= self.it_noise:
+        self.alfa_noise = 2*(np.random.rand(self.N) - 0.5) * self.ang_noise/180*np.pi
+        self.cnt_noise = 0
+      else:
+        self.cnt_noise = self.cnt_noise + 1
+
+      l_sigma_hat = np.squeeze(self.l_sigma_hat[:,None].T @ M_rot(self.alfa_noise)).T
 
     # compute p_dot
     p_dot = self.vf * l_sigma_hat
     return p_dot
 
   def shape_control(self):
-    return (self.Xd - self.X)/10
+    return (self.Xd - self.X)/6
 
   """
   Euler integration (Step-wise).
@@ -174,11 +183,17 @@ class simulation_class1(sim_frame):
     self.d = la.norm(self.X, axis=1)
     self.sigma = self.sigma_field.value(self.get_pf())
 
-    # Compute p_dot and send it to sim_frame
+    # Filter active and non-active agents
+    self.d = np.where(self.active, self.d, None)
     X_active = np.diag(self.active) @ self.X
+
+    # Compute p_dot and send it to sim_frame
     p_dot = self.free_kinematics(X_active)
     if self.mod_shape:
-      p_dot = p_dot + self.shape_control()
+      if self.static_mod_shape:
+        p_dot = self.shape_control()
+      else:
+        p_dot = p_dot + self.shape_control()
     p_dot_active = np.diag(self.active) @ p_dot
     self.int_euler([p_dot_active])
 
