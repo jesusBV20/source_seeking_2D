@@ -30,8 +30,8 @@ LEGEND_LABELS = ["active", "computer unit", "non-active", "centroid"]
 
 # Agents parameters
 AGENTS_RAD = 0.05
-AGENTS_ACTIVE_LW = 0.06
-AGENTS_DEAD_LW = 0.04
+AGENTS_ACTIVE_LW = 0.04
+AGENTS_DEAD_LW = 0.03
 ALFA_INIT = 0.02
 
 # Size of the unicycle patches

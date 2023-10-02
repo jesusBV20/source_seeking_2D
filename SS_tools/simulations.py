@@ -9,13 +9,12 @@ from SS_tools.simulator_frame import sim_frame
 # ----------------------------------------------------------------------
 
 """
-Clase para recolectar los datos de la simulación, para todos los frames y
-clusters.
-  * simulation: simulador que controla a los clusters.
-  * data_labels: datos que se desean extraer.
+Class to collect the simulation data for every frame and cluster
+  * simulation: simulatior controlling the clusters.
+  * data_labels: data to be push.
 
-Devuelve como resultado:
-  * data: Diccionario con todos los datos de la simulación.
+Returns:
+  * data: dictionary which contains every data field of the simulation.
 """
 class data_collector:
   def __init__(self, simulation, data_labels):

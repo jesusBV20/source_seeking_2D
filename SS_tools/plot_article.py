@@ -29,11 +29,11 @@ def kw_patch_dyn(scale):
 """
 Function to easy plot a 2D vector
 """
-def vector2d(axis, P0, Pf, c="k", ls="-", lw = 0.7, hw=0.1, hl=0.2):
+def vector2d(axis, P0, Pf, c="k", ls="-", lw = 0.7, hw=0.1, hl=0.2, alpha=1):
     axis.arrow(P0[0], P0[1], Pf[0], Pf[1],
                 lw=lw, color=c, ls=ls,
                 head_width=hw, head_length=hl, 
-                length_includes_head=True)
+                length_includes_head=True, alpha=alpha)
 
 """
 Function to plot the S region
@@ -319,7 +319,7 @@ def plot_polyreg(ax, N, r, theta0=0, legend=False, xlab=False, ylab=False, title
         leg = Legend(ax, [arr1, arr2, arr3], 
                     [r"$\nabla \sigma (p_c)$ (Non-computed)",
                     r"$L_{\sigma}$: Actual computed ascending direction",
-                    r"$L_1$ (Non-computed)"],
+                    r"$L_{\sigma}^1$ (Non-computed)"],
                     loc="upper left", prop={'size': 10}, ncol=1)
 
         ax.add_artist(leg)
@@ -403,7 +403,7 @@ def plot_rect(ax, lx, ly, legend=False, xlab=False, ylab=False):
         leg = Legend(ax, [arr1, arr2, arr3], 
                     [r"$\nabla \sigma (p_c)$ (Non-computed)",
                     r"$L_{\sigma}$: Actual computed ascending direction",
-                    r"$L_1$ (Non-computed)"],
+                    r"$L_{\sigma}^1$ (Non-computed)"],
                     loc="upper left", prop={'size': 10}, ncol=1)
 
         ax.add_artist(leg)
@@ -411,9 +411,9 @@ def plot_rect(ax, lx, ly, legend=False, xlab=False, ylab=False):
 """
 Function to verify Proposition 5 & 6
 """
-def plot_flower(ax, N, r, b=3, legend=False, xlab=False, ylab=False):
+def plot_flower(fig, ax, N, r, b=3, legend=False, xlab=False, ylab=False):
     mu0 = np.array([30,20])
-    p0 = np.array([-10,-5])
+    p0 = np.array([0,0])
     scale = 2*r + 2*b
 
     # Generating the scalar field -------------
@@ -455,6 +455,9 @@ def plot_flower(ax, N, r, b=3, legend=False, xlab=False, ylab=False):
     if ylab:
         ax.set_ylabel("$Y$ [L]")
 
+    # Draw the scalar field
+    sigma_test.draw(fig=fig, ax=ax, xlim=60, ylim=60, n=300, contour_levels=20, cbar_sw=False)
+
     # Lines
     ax.axhline(0, c="k", ls="-", lw=1.1)
     ax.axvline(0, c="k", ls="-", lw=1.1)
@@ -465,9 +468,9 @@ def plot_flower(ax, N, r, b=3, legend=False, xlab=False, ylab=False):
 
     # Arrows
     kw_arrow = kw_arrow_dyn((scale/2)**(1/1.5))
-    vector2d(ax, [0,0], l_sigma*scale/2/1.2, c="red", **kw_arrow)
-    vector2d(ax, [0,0], l1_vec*scale/2/1.3, c="green", **kw_arrow)
-    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow)
+    vector2d(ax, [0,0], l_sigma*scale/2/1.4, c="red", **kw_arrow)
+    vector2d(ax, [0,0], l1_vec*scale/2/1.4, c="green", **kw_arrow, alpha=0.5)
+    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow, alpha=0.8)
 
     # Generate the legend
     if legend:
@@ -475,21 +478,23 @@ def plot_flower(ax, N, r, b=3, legend=False, xlab=False, ylab=False):
         arr2 = plt.scatter([],[],c='red',marker=r'$\uparrow$',s=60)
         arr3 = plt.scatter([],[],c='green',marker=r'$\uparrow$',s=60)
 
-        leg = Legend(ax, [arr1, arr2, arr3], 
-                    [r"$\nabla \sigma (p_c)$ (Non-computed)",
-                    r"$L_{\sigma}$: Actual computed ascending direction",
-                    r"$L_1$ (Non-computed)"],
-                    loc="upper left", prop={'size': 10}, ncol=1)
+        leg_labs = [r"$\nabla \sigma (p_c)$ (Non-computed)",
+                    r"$L_{\sigma}$: Actual computed" +"\nascending direction",
+                    r"$L_{\sigma}^1$ (Non-computed)"]
+        leg_obj  = [arr1, arr2, arr3]
+
+        leg = Legend(ax, [leg_obj[legend-1]], [leg_labs[legend-1]],
+                    loc="lower left", prop={'size': 16}, ncol=1)
 
         ax.add_artist(leg)
 
 """
 Function to show what happens if the formation have S0 and S1
 """
-def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
-    mu0 = np.array([30,20])
-    p0 = np.array([-10,-5])
-    scale = np.max(lims)*1.5
+def plot_batman(fig, ax, N, lims, legend=False, xlab=False, ylab=False, lims_ax=None):
+    mu0 = np.array([20,15])
+    p0 = np.array([0,0])
+    scale = np.max(lims)*10/np.max(lims)**0.7
 
     # Generating the scalar field -------------
     sigma_func = sigma_gauss(mu=mu0, max_intensity=100, dev=20)
@@ -518,8 +523,11 @@ def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
 
     # Plotting -------------
     # Axis configuration
-    dr = scale/2 + scale/6 
-    ax.axis([-dr, dr, -dr, dr])
+    if lims_ax is not None:
+        ax.axis(lims_ax)
+    else:
+        dr = scale/2 + scale/6 
+        ax.axis([-dr, dr, -dr, dr])
     ax.set_aspect("equal")
     ax.grid(True)
 
@@ -532,6 +540,9 @@ def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
     if ylab:
         ax.set_ylabel("$Y$ [L]")
 
+    # Draw the scalar field
+    sigma_test.draw(fig=fig, ax=ax, xlim=60, ylim=60, n=300, contour_levels=20, cbar_sw=False)
+
     # Lines
     ax.axhline(0, c="k", ls="-", lw=1.1)
     ax.axvline(0, c="k", ls="-", lw=1.1)
@@ -542,9 +553,9 @@ def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
 
     # Arrows
     kw_arrow = kw_arrow_dyn((scale/2)**(1/1.5))
-    vector2d(ax, [0,0], l_sigma*scale/2/1.2, c="red", **kw_arrow)
-    vector2d(ax, [0,0], l1_vec*scale/2/1.3, c="green", **kw_arrow)
-    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow)
+    vector2d(ax, [0,0], l_sigma*scale/2/1.4, c="red", **kw_arrow)
+    vector2d(ax, [0,0], l1_vec*scale/2/1.4, c="green", **kw_arrow, alpha=0.5)
+    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow, alpha=0.8)
 
     # Generate the legend
     if legend:
@@ -552,11 +563,13 @@ def plot_batman(ax, N, lims, legend=False, xlab=False, ylab=False):
         arr2 = plt.scatter([],[],c='red',marker=r'$\uparrow$',s=60)
         arr3 = plt.scatter([],[],c='green',marker=r'$\uparrow$',s=60)
 
-        leg = Legend(ax, [arr1, arr2, arr3], 
-                    [r"$\nabla \sigma (p_c)$ (Non-computed)",
-                    r"$L_{\sigma}$: Actual computed ascending direction",
-                    r"$L_1$ (Non-computed)"],
-                    loc="upper left", prop={'size': 10}, ncol=1)
+        leg_labs = [r"$\nabla \sigma (p_c)$ (Non-computed)",
+                    r"$L_{\sigma}$: Actual computed" +"\nascending direction",
+                    r"$L_{\sigma}^1$ (Non-computed)"]
+        leg_obj  = [arr1, arr2, arr3]
+
+        leg = Legend(ax, [leg_obj[legend-1]], [leg_labs[legend-1]],
+                    loc="lower left", prop={'size': 16}, ncol=1)
 
         ax.add_artist(leg)
 

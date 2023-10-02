@@ -58,7 +58,7 @@ class sigma:
   """
   Function to draw the scalar field.
   """
-  def draw(self, fig=None, ax=None, xlim=30, ylim=30, cmap=MY_CMAP, n=256, contour_levels=0, contour_lw=0.3):
+  def draw(self, fig=None, ax=None, xlim=30, ylim=30, cmap=MY_CMAP, n=256, contour_levels=0, contour_lw=0.3, cbar_sw=True):
     if fig == None:
       fig = plt.figure(figsize=(16, 9), dpi=100)
       ax = fig.subplots()
@@ -77,11 +77,12 @@ class sigma:
     ax.plot(self.mu[0], self.mu[1], "+k")
     color_map = ax.pcolormesh(X, Y, Z, cmap=cmap)
 
-    divider = make_axes_locatable(ax)
-    cax = divider.append_axes('right', size='2%', pad=0.05)
+    if cbar_sw:
+      divider = make_axes_locatable(ax)
+      cax = divider.append_axes('right', size='2%', pad=0.05)
 
-    cbar = fig.colorbar(color_map, cax=cax)
-    cbar.set_label(label='$\sigma$ [u]', labelpad=10)
+      cbar = fig.colorbar(color_map, cax=cax)
+      cbar.set_label(label='$\sigma$ [u]', labelpad=10)
 
     if contour_levels != 0:
       contr_map = ax.contour(X, Y, Z, contour_levels, colors="k", linewidths=contour_lw, linestyles="-", alpha=0.2)
@@ -138,7 +139,7 @@ class sigma:
     grad_x_unit = grad_x/la.norm(grad_x)
     quiver = ax.quiver(x[0], x[1], grad_x_unit[0], grad_x_unit[1],
                         width=width, scale=scale, zorder=zorder, alpha=alpha)
-    return quiver
+    return grad_x_unit
 
   """
   Funtion to compute and draw L^1.
