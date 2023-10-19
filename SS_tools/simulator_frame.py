@@ -33,7 +33,7 @@ class sim_frame:
   Euler integrator.
     * dX: lista de matrices con las mismas dimensiones que self.states.
   """
-  def int_euler(self, dX): #TODO: Poder elegir entre RK4 y euler
+  def frame_int_euler(self, dX): #TODO: Poder elegir entre RK4 y euler
     self.tf = self.tf + self.dt
     if len(self.states) == len(dX):
       for i in range(len(self.states)):

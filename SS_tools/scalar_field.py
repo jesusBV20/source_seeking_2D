@@ -131,7 +131,7 @@ class sigma:
     * scale: scales the length of the arrow (smaller for larger scale values).
     * zorder: overlay order in the plot.
   """
-  def draw_grad(self, x, ax, width=0.002, scale=30, zorder=2, alpha=1):
+  def draw_grad(self, x, ax, width=0.002, scale=30, zorder=2, alpha=1, ret_arr=True):
     if type(x) == list:
       grad_x = self.grad(np.array(x))[0]
     else:
@@ -139,7 +139,10 @@ class sigma:
     grad_x_unit = grad_x/la.norm(grad_x)
     quiver = ax.quiver(x[0], x[1], grad_x_unit[0], grad_x_unit[1],
                         width=width, scale=scale, zorder=zorder, alpha=alpha)
-    return grad_x_unit
+    if ret_arr:
+      return quiver
+    else:
+      return grad_x_unit
 
   """
   Funtion to compute and draw L^1.

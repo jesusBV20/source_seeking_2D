@@ -98,7 +98,7 @@ class simulation_class1(sim_frame):
 
     # Useful variables for this simulation
     self.mod_shape = mod_shape                         # Geometry control switch
-    self.static_mod_shape = 0
+    self.static_mod_shape = False
     self.Xd = self.X                                   # Desired geometry
     self.obstacles = obstacles                         # Simulation obstacles
 
@@ -142,7 +142,7 @@ class simulation_class1(sim_frame):
     * sigma: Vector with sigma_field measurements of each agent (N x 1).
   """
   def free_kinematics(self, X):
-    # compute l_sigma
+    # Compute l_sigma
     l_sigma_hat = self.L_sigma(X, self.sigma)
     l_sigma_hat_norm = la.norm(l_sigma_hat)
 
@@ -151,7 +151,7 @@ class simulation_class1(sim_frame):
     else:
       self.l_sigma_hat = np.zeros(2)
     
-    # virtual noise in l_sigma_hat (new bias each "noise_it" interations)
+    # Virtual noise in l_sigma_hat (new bias each "noise_it" interations) + compute p_dot
     if self.ang_noise > 0:
       if self.cnt_noise >= self.it_noise:
         self.alfa_noise = 2*(np.random.rand(self.N) - 0.5) * self.ang_noise/180*np.pi
@@ -159,12 +159,16 @@ class simulation_class1(sim_frame):
       else:
         self.cnt_noise = self.cnt_noise + 1
 
-      l_sigma_hat = np.squeeze(self.l_sigma_hat[:,None].T @ M_rot(self.alfa_noise)).T
+      l_sigma_hat_ = np.squeeze(self.l_sigma_hat.T @ M_rot(self.alfa_noise)).T
+      p_dot = self.vf * l_sigma_hat_
+    
+    else:
+      p_dot = self.vf * self.l_sigma_hat
 
-    # compute p_dot
-    p_dot = self.vf * l_sigma_hat
     return p_dot
 
+  """\
+  """
   def shape_control(self):
     return (self.Xd - self.X)/6
 
@@ -186,15 +190,19 @@ class simulation_class1(sim_frame):
     self.d = np.where(self.active, self.d, None)
     X_active = np.diag(self.active) @ self.X
 
-    # Compute p_dot and send it to sim_frame
+    # Compute p_dot based on l_sigma
     p_dot = self.free_kinematics(X_active)
+
+    # Shape controller
     if self.mod_shape:
       if self.static_mod_shape:
         p_dot = self.shape_control()
       else:
         p_dot = p_dot + self.shape_control()
     p_dot_active = np.diag(self.active) @ p_dot
-    self.int_euler([p_dot_active])
+
+    # Send p_dot to the sim_frame
+    self.frame_int_euler([p_dot_active])
 
     # Update telemetry
     self.update_telemetry()
@@ -321,7 +329,7 @@ class simulation_class2(sim_frame):
     self.omega_i = self.gvf_control()
     x_dot = self.unicycle_kinematics()
 
-    self.int_euler(x_dot)
+    self.frame_int_euler(x_dot)
 
     # Update telemetry
     self.update_telemetry()

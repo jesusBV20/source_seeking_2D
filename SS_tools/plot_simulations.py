@@ -30,8 +30,8 @@ LEGEND_LABELS = ["active", "computer unit", "non-active", "centroid"]
 
 # Agents parameters
 AGENTS_RAD = 0.05
-AGENTS_ACTIVE_LW = 0.04
-AGENTS_DEAD_LW = 0.03
+AGENTS_ACTIVE_LW = 0.08
+AGENTS_DEAD_LW = 0.06
 ALFA_INIT = 0.02
 
 # Size of the unicycle patches
@@ -108,6 +108,7 @@ def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=No
     main_ax.set_ylim([-ylim,ylim])
     main_ax.set_ylabel(r"$p_y$ [L]")
     main_ax.set_xlabel(r"$p_x$ [L]")
+    main_ax.grid(True)
 
     sigma_data_ax.set_ylabel(r"$\sigma_i$ [u]")
     sigma_data_ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
@@ -153,7 +154,7 @@ def plot_class1(data_col, sim, t_list = None, field_rot_sw = False, tail_time=No
             main_ax.add_patch(icon_init)
             main_ax.add_patch(icon)
             main_ax.plot(xdata[li-tail_frames:li,n],ydata[li-tail_frames:li,n],
-                        c=color[n], ls="-", lw=lw[n], zorder=z_order[n])
+                         c=color[n], ls="-", lw=lw[n], zorder=z_order[n])
 
         # Gradient arrow
         sim.sigma_field.draw_grad([rc_xdata[li], rc_ydata[li]], main_ax, **arr_kw)
@@ -537,6 +538,7 @@ def plot_class2(data_col, sim, t_list = None, tail_time=None):
     main_ax.set_ylim([-ylim,ylim])
     main_ax.set_ylabel(r"$p_y$ [L]")
     main_ax.set_xlabel(r"$p_x$ [L]")
+    main_ax.grid(True)
 
     sigma_data_ax.set_ylabel(r"$\sigma_i$ [u]")
     sigma_data_ax.yaxis.set_major_formatter(plt.FormatStrFormatter('%.2f'))
@@ -849,6 +851,7 @@ def anim_class2(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD"):
                         np.array(_zoom_range(-ylim, ylim, 0, zoom)))
         main_ax.set_ylim(0 + sim.sigma_field.mu[1]/2 * i/anim_frames +
                         np.array(_zoom_range(-ylim, ylim, 0, zoom)))
+        main_ax.grid(True)
 
         # Show the completion percentage of the simulation
         if (i % int((anim_frames-1)/10) == 0):
