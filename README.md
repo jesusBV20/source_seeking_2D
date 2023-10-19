@@ -10,4 +10,6 @@ This repository was introduced in a lesson given by [Héctor García de Marina](
     
 This article presents an algorithm to solve the source-seeking problem of a scalar field with a swarm of robots. 
 
+Submitted paper: https://arxiv.org/pdf/2309.02937.pdf
+
 -> [Jesús Bautista Villar](https://sites.google.com/view/jbautista-research) is the maintainer of this repository. He welcomes any inquiries or requests for further information and can be reached via email at <jesbauti20@gmail.com>.
