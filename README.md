@@ -1,6 +1,6 @@
 # Resilient source seeking with robot swarms
 
-This repository was introduced in a lesson given by Héctor García de Marina at *MRS Summer School 2023*. It is maintained by [Jesús Bautista Villar](https://sites.google.com/view/jbautista-research), who is currently conducting Python simulations to validate the results and findings presented in an ongoing work-in-progress article:
+This repository was introduced in a lesson given by [Héctor García de Marina](https://www.linkedin.com/in/hgdemarina/) at *MRS Summer School 2023*. It is maintained by [Jesús Bautista Villar](https://sites.google.com/view/jbautista-research), who is currently conducting Python simulations to validate the results and findings presented in an ongoing work-in-progress article:
 
     @article{abyjg2023resilientss,
       title={Resilient source seeking with a robot swarm},
