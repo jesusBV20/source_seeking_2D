@@ -7,9 +7,19 @@ This repository was introduced in a lesson given by [Héctor García de Marina](
       author={Antonio Acuaviva, Jesus Bautista, Weijia Yao, Juan Jimenez, Hector Garcia de Marina},
       year={2023},
     }
-    
-This article presents an algorithm to solve the source-seeking problem of a scalar field with a swarm of robots. 
 
-Submitted paper: https://arxiv.org/pdf/2309.02937.pdf
+## Quick Install
 
--> [Jesús Bautista Villar](https://sites.google.com/view/jbautista-research) is the maintainer of this repository. He welcomes any inquiries or requests for further information and can be reached via email at <jesbauti20@gmail.com>.
+To install, simply run:
+
+```bash
+python install.py
+```
+
+## Usage
+
+For an overview of the project's structure and to see the code in action, we recommend running the Jupyter notebooks located in the `notebooks` directory.
+
+## Credits
+
+This repository is maintained by [Jesús Bautista Villar](https://sites.google.com/view/jbautista-research). For inquiries or further information, feel free to contact him at <jesbauti20@gmail.com>.

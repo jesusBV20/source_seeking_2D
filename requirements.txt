@@ -1,0 +1,6 @@
+## Required python packages ##
+IPython
+matplotlib
+numpy
+scipy
+tqdm
