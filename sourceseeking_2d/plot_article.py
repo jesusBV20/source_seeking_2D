@@ -29,11 +29,11 @@ def kw_patch_dyn(scale):
 """
 Function to easy plot a 2D vector
 """
-def vector2d(axis, P0, Pf, c="k", ls="-", lw = 0.7, hw=0.1, hl=0.2, alpha=1):
+def vector2d(axis, P0, Pf, c="k", ls="-", lw = 0.7, hw=0.1, hl=0.2, zorder=3):
     axis.arrow(P0[0], P0[1], Pf[0], Pf[1],
                 lw=lw, color=c, ls=ls,
                 head_width=hw, head_length=hl, 
-                length_includes_head=True, alpha=alpha)
+                length_includes_head=True, zorder=zorder)
 
 """
 Function to plot the S region

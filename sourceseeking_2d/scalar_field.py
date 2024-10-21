@@ -131,14 +131,20 @@ class sigma:
     * scale: scales the length of the arrow (smaller for larger scale values).
     * zorder: overlay order in the plot.
   """
-  def draw_grad(self, x, ax, width=0.002, scale=30, zorder=2, alpha=1, ret_arr=True):
+  def draw_grad(self, x, ax, width=0.002, scale=30, zorder=2, alpha=1, ret_arr=True, norm_fct=0):
     if type(x) == list:
       grad_x = self.grad(np.array(x))[0]
     else:
       grad_x = self.grad(x)[0]
-    grad_x_unit = grad_x/la.norm(grad_x)
+
+    if norm_fct:
+      grad_x_unit = grad_x/la.norm(grad_x)
+    else:
+      grad_x_unit = grad_x*norm_fct
+
     quiver = ax.quiver(x[0], x[1], grad_x_unit[0], grad_x_unit[1],
                         width=width, scale=scale, zorder=zorder, alpha=alpha)
+    
     if ret_arr:
       return quiver
     else:
@@ -153,7 +159,6 @@ class sigma:
       N = P.shape[0]
       X = P - pc
 
-      sigma_val = self.value(P)
       grad_pc = self.grad(np.array(pc))[0]
       l1_sigma_hat = (grad_pc[:,None].T @ X.T) @ X
 
