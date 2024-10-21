@@ -58,7 +58,7 @@ class sigma:
   """
   Function to draw the scalar field.
   """
-  def draw(self, fig=None, ax=None, xlim=30, ylim=30, cmap=MY_CMAP, n=256, contour_levels=0, contour_lw=0.3, cbar_sw=True):
+  def draw(self, fig=None, ax=None, xlim=30, ylim=30, cmap=MY_CMAP, n=256, contour_levels=0, contour_lw=0.3, cbar_lab=r"$\sigma$ [u]", cbar_sw=True):
     if fig == None:
       fig = plt.figure(figsize=(16, 9), dpi=100)
       ax = fig.subplots()
@@ -82,7 +82,7 @@ class sigma:
       cax = divider.append_axes('right', size='2%', pad=0.05)
 
       cbar = fig.colorbar(color_map, cax=cax)
-      cbar.set_label(label='$\sigma$ [u]', labelpad=10)
+      cbar.set_label(label=cbar_lab, labelpad=10)
 
     if contour_levels != 0:
       contr_map = ax.contour(X, Y, Z, contour_levels, colors="k", linewidths=contour_lw, linestyles="-", alpha=0.2)
