@@ -17,7 +17,10 @@ KW_ARROW_TINY = {"lw":2, "hw":0.05, "hl":0.1}
 KW_PATCH_TINY = {"size":0.15, "lw":0.2}
 
 def kw_arrow_dyn(scale):
-    return {"lw":2*scale**(1/5), "hw":0.05*scale, "hl":0.1*scale}
+    return {"lw":2*scale**(1/5), "hw":0.1*scale, "hl":0.2*scale}
+
+def kw_arrow_dyn2(scale):
+    return {"lw":2*scale**(1/5), "hw":0.11*scale, "hl":0.2*scale}
 
 def kw_patch_dyn(scale):
     return {"size":0.15*scale, "lw":0.2*scale**(1/2)}
@@ -412,12 +415,15 @@ def plot_rect(ax, lx, ly, legend=False, xlab=False, ylab=False):
 Function to verify Proposition 5 & 6
 """
 def plot_flower(fig, ax, N, r, b=3, legend=False, xlab=False, ylab=False):
-    mu0 = np.array([30,20])
     p0 = np.array([0,0])
     scale = 2*r + 2*b
 
     # Generating the scalar field -------------
-    sigma_func = sigma_gauss(mu=mu0, max_intensity=100, dev=20)
+    n = 2
+    mu = np.array([20,10])
+    dev = 10
+
+    sigma_func = sigma_nonconvex(k=0.04, dev=dev, mu=mu)
     sigma_test = sigma(sigma_func)
 
     # Generate the formation -------------
@@ -459,8 +465,8 @@ def plot_flower(fig, ax, N, r, b=3, legend=False, xlab=False, ylab=False):
     sigma_test.draw(fig=fig, ax=ax, xlim=60, ylim=60, n=300, contour_levels=20, cbar_sw=False)
 
     # Lines
-    ax.axhline(0, c="k", ls="-", lw=1.1)
-    ax.axvline(0, c="k", ls="-", lw=1.1)
+    ax.axhline(0, c="k", ls="-", lw=1.1, alpha=0.8)
+    ax.axvline(0, c="k", ls="-", lw=1.1, alpha=0.8)
     
     # Agents
     for n in range(N):
@@ -468,8 +474,9 @@ def plot_flower(fig, ax, N, r, b=3, legend=False, xlab=False, ylab=False):
 
     # Arrows
     kw_arrow = kw_arrow_dyn((scale/2)**(1/1.5))
-    vector2d(ax, [0,0], l_sigma*scale/2/1.4, c="red", **kw_arrow)
-    vector2d(ax, [0,0], l1_vec*scale/2/1.4, c="green", **kw_arrow, alpha=0.5)
+    kw_arrow2 = kw_arrow_dyn2((scale/2)**(1/1.5))
+    vector2d(ax, [0,0], l_sigma*scale/2/1.4, c="red", **kw_arrow2)
+    vector2d(ax, [0,0], l1_vec*scale/2/1.4, c="green", **kw_arrow)
     vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow, alpha=0.8)
 
     # Generate the legend
@@ -492,12 +499,19 @@ def plot_flower(fig, ax, N, r, b=3, legend=False, xlab=False, ylab=False):
 Function to show what happens if the formation have S0 and S1
 """
 def plot_batman(fig, ax, N, lims, legend=False, xlab=False, ylab=False, lims_ax=None):
-    mu0 = np.array([20,15])
     p0 = np.array([0,0])
-    scale = np.max(lims)*10/np.max(lims)**0.7
+    
+    if lims_ax is not None:
+        scale = np.max(lims_ax)*16/np.max(lims_ax)**0.7
+    else:
+        scale = np.max(lims)*16/np.max(lims)**0.7
 
     # Generating the scalar field -------------
-    sigma_func = sigma_gauss(mu=mu0, max_intensity=100, dev=20)
+    n = 2
+    mu = np.array([20,10])
+    dev = 10
+
+    sigma_func = sigma_nonconvex(k=0.04, dev=dev, mu=mu)
     sigma_test = sigma(sigma_func)
 
     # Generate the formation -------------
@@ -544,8 +558,8 @@ def plot_batman(fig, ax, N, lims, legend=False, xlab=False, ylab=False, lims_ax=
     sigma_test.draw(fig=fig, ax=ax, xlim=60, ylim=60, n=300, contour_levels=20, cbar_sw=False)
 
     # Lines
-    ax.axhline(0, c="k", ls="-", lw=1.1)
-    ax.axvline(0, c="k", ls="-", lw=1.1)
+    ax.axhline(0, c="k", ls="-", lw=1.1, alpha=0.8)
+    ax.axvline(0, c="k", ls="-", lw=1.1, alpha=0.8)
     
     # Agents
     for n in range(N):
@@ -553,8 +567,9 @@ def plot_batman(fig, ax, N, lims, legend=False, xlab=False, ylab=False, lims_ax=
 
     # Arrows
     kw_arrow = kw_arrow_dyn((scale/2)**(1/1.5))
-    vector2d(ax, [0,0], l_sigma*scale/2/1.4, c="red", **kw_arrow)
-    vector2d(ax, [0,0], l1_vec*scale/2/1.4, c="green", **kw_arrow, alpha=0.5)
+    kw_arrow2 = kw_arrow_dyn2((scale/2)**(1/1.5))
+    vector2d(ax, [0,0], l_sigma*scale/2/1.4, c="red", **kw_arrow2)
+    vector2d(ax, [0,0], l1_vec*scale/2/1.4, c="green", **kw_arrow)
     vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow, alpha=0.8)
 
     # Generate the legend
