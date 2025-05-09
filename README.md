@@ -11,13 +11,16 @@ This repository was introduced in a lesson given by [Héctor García de Marina](
     }
 ```
 
-## Quick Install
+## Installation
 
-To install, run:
+To install the required dependencies, simply run:
 
 ```bash
 python install.py
 ```
+
+### Additional Dependencies
+Some additional dependencies, such as LaTeX fonts and FFmpeg, may be required. We recommend following the installation instructions provided in the ```ssl_simulator``` [README](https://github.com/Swarm-Systems-Lab/ssl_simulator/blob/master/README.md). 
 
 ## Usage
 
