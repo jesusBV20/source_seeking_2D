@@ -477,7 +477,7 @@ def plot_flower(fig, ax, N, r, b=3, legend=False, xlab=False, ylab=False):
     kw_arrow2 = kw_arrow_dyn2((scale/2)**(1/1.5))
     vector2d(ax, [0,0], l_sigma*scale/2/1.4, c="red", **kw_arrow2)
     vector2d(ax, [0,0], l1_vec*scale/2/1.4, c="green", **kw_arrow)
-    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow, alpha=0.8)
+    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow)
 
     # Generate the legend
     if legend:
@@ -570,7 +570,7 @@ def plot_batman(fig, ax, N, lims, legend=False, xlab=False, ylab=False, lims_ax=
     kw_arrow2 = kw_arrow_dyn2((scale/2)**(1/1.5))
     vector2d(ax, [0,0], l_sigma*scale/2/1.4, c="red", **kw_arrow2)
     vector2d(ax, [0,0], l1_vec*scale/2/1.4, c="green", **kw_arrow)
-    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow, alpha=0.8)
+    vector2d(ax, [0,0], grad*scale/2/1.4, c="k", **kw_arrow)
 
     # Generate the legend
     if legend:
