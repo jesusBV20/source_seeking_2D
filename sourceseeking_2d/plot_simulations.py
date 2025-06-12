@@ -442,9 +442,9 @@ def anim_class1(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD", fi
         # string format: https://www.w3schools.com/python/ref_string_format.asp
         txt_title.set_text('Frame = {0:>4} | Tf = {1:>5.2f} [T] | N = {2:>4} robots'.format(i, i*dt, sim.N))
 
-        sigma_line.set_xdata(i*dt)
-        dline.set_xdata(i*dt)
-        eline.set_xdata(i*dt)
+        sigma_line.set_xdata([i*dt])
+        dline.set_xdata([i*dt])
+        eline.set_xdata([i*dt])
 
         # Efecto zoom
         # if (i*dt < _min_t):
@@ -844,10 +844,10 @@ def anim_class2(data_col, sim, anim_tf=None, tail_frames=100, res_label="HD"):
         # string format: https://www.w3schools.com/python/ref_string_format.asp
         txt_title.set_text('Frame = {0:>4} | Tf = {1:>5.2f} [T] | N = {2:>4} robots'.format(i, i*dt, sim.N))
 
-        sigma_line.set_xdata(i*dt)
-        omega_line.set_xdata(i*dt)
-        dline.set_xdata(i*dt)
-        eline.set_xdata(i*dt)
+        sigma_line.set_xdata([i*dt])
+        omega_line.set_xdata([i*dt])
+        dline.set_xdata([i*dt])
+        eline.set_xdata([i*dt])
 
         # Zoom effect
         if (i*dt < _min_t):
